@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  movie_id    Int      @id @default(autoincrement())
+  name        String
+  year        Int
+  genre       String
+  budget      Int
+  actors      ActorInMovies[]
+  director    Director   @relation(fields: [dirid], references: [dir_id])
+  dirid       Int
+
+  @@map("movies")
+}
+
+model Actor {
+  actor_id    Int      @id @default(autoincrement())
+  name        String
+  lastname    String
+  age         Int
+  movies      ActorInMovies[]
+  shows       ActorInTVShows[]
+
+  @@map("actors")
+}
+
+model ActorInMovies {
+  movie    Movie    @relation(fields: [mid], references: [movie_id])
+  mid      Int
+  actor    Actor    @relation(fields: [aid], references: [actor_id])
+  aid      Int
+
+  @@id([mid, aid])
+  @@map("actor_movie")
+}
+
+model TVShow {
+  show_id    Int      @id @default(autoincrement())
+  title      String
+  year       Int
+  genre      String
+  no_seasons Int
+  actors     ActorInTVShows[]
+  seasons    Season[]
+  director   Director   @relation(fields: [dirid], references: [dir_id])
+  dirid      Int
+
+  @@map("tvshows")
+}
+
+model ActorInTVShows {
+  actor    Actor    @relation(fields: [aid], references: [actor_id])
+  aid      Int
+  show     TVShow   @relation(fields: [tid], references: [show_id])
+  tid      Int
+  
+  @@id([aid, tid])
+  @@map("actor_tvshow")
+}
+
+model Season {
+  season_id    Int      @id @default(autoincrement())
+  name         String
+  number       Int
+  show         TVShow   @relation(fields: [tid], references: [show_id])
+  tid          Int
+  episodes     Episode[]
+
+  @@map("seasons")
+}
+
+model Episode {
+  ep_id    Int      @id @default(autoincrement())
+  name     String
+  duration Int
+  season   Season   @relation(fields: [sid], references: [season_id])
+  sid      Int
+  director Director   @relation(fields: [dirid], references: [dir_id])
+  dirid      Int
+
+  @@map("episodes")
+}
+
+model Director {
+  dir_id    Int      @id @default(autoincrement())
+  name      String
+  lastname  String
+  age       Int
+  episodes  Episode[]
+  movies    Movie[]
+  shows     TVShow[]
+
+  @@map("directors")
+}
